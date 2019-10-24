@@ -1,0 +1,105 @@
+version: '3'
+
+networks:
+  app-tier:
+volumes:
+  sql-data:
+  laravel_pusher-data:
+services:
+    db:
+         image: mariadb:10.1.37
+         container_name: mariadb
+         ports:
+           - 3306:3306
+         environment:
+           - MYSQL_ROOT_PASSWORD=123456
+           - DB_USERNAME=root
+         networks:
+           - app-tier
+         volumes:
+           - sql-data:/var/lib/mysql
+           - "./pusher.sql:/docker-entrypoint-initdb.d/pusher.sql"
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin:4.9
+        container_name: phpmyadmin
+        depends_on:
+                - db
+        ports:
+          - 8080:80
+        networks:
+          - app-tier
+#    nginx:
+#        image: yudada/nginx
+#        container_name: nginx
+#        environment:
+#          PHP_FPM: php-fpm
+#        command: /bin/bash -c "envsubst < /nginx.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+#        ports:
+#            - 80:80
+#            - 443:443
+#        volumes:
+#            - "${APP_PATH}:/usr/share/nginx/html"
+#            - "${SSL_CRT}:/etc/nginx/ssl_crt"
+#        depends_on:
+#            - php-fpm
+#        restart: always
+#        networks:
+#          - app-tier
+#    php-fpm:
+#        image: yudada/laravel-www
+#        container_name: php-fpm
+#        hostname: php
+#        environment:
+#            CONTAINER_ROLE: app
+#        volumes:
+#            - "${APP_PATH}:/var/www/html"
+#        networks:
+#            - app-tier
+    pusher_server:
+      image: yudada/pusher
+      container_name: pusher_server
+      ports:
+        - 6001:6001
+      environment:
+        PUSHER_APP_ID: ${PUSHER_APP_ID}
+        PUSHER_APP_KEY: ${PUSHER_APP_KEY}
+        PUSHER_APP_SECRET: ${PUSHER_APP_SECRET}
+        LARAVEL_WEBSOCKETS_SSL_LOCAL_CERT: "${LARAVEL_WEBSOCKETS_SSL_LOCAL_CERT}"
+        LARAVEL_WEBSOCKETS_SSL_LOCAL_PK: "${LARAVEL_WEBSOCKETS_SSL_LOCAL_PK}"
+      volumes:
+       # - "/Users/user/laravel_pusher:/var/www/html"
+        - "laravel_pusher-data:/var/www/html"
+        - "${SSL_CRT}:/etc/ssl_crt"
+      restart: always
+      networks:
+        - app-tier
+    pusher_nginx:
+      image: yudada/nginx
+      container_name: pusher_nginx
+      environment:
+        PHP_FPM: pusher_php-fpm
+      command: /bin/bash -c "envsubst < /nginx.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+      ports:
+        - 81:80
+      volumes:
+        - "laravel_pusher-data:/usr/share/nginx/html"
+      depends_on:
+        - pusher_php-fpm
+      networks:
+        - app-tier
+    pusher_php-fpm:
+        image: yudada/laravel-www
+        container_name: pusher_php-fpm
+        hostname: php
+        environment:
+          CONTAINER_ROLE: app
+          PUSHER_APP_ID: ${PUSHER_APP_ID}
+          PUSHER_APP_KEY: ${PUSHER_APP_KEY}
+          PUSHER_APP_SECRET: ${PUSHER_APP_SECRET}
+          LARAVEL_WEBSOCKETS_SSL_LOCAL_CERT: "${LARAVEL_WEBSOCKETS_SSL_LOCAL_CERT}"
+          LARAVEL_WEBSOCKETS_SSL_LOCAL_PK: "${LARAVEL_WEBSOCKETS_SSL_LOCAL_PK}"
+        volumes:
+          - "laravel_pusher-data:/var/www/html"
+          - "${SSL_CRT}:/etc/ssl_crt"
+        networks:
+          - app-tier
