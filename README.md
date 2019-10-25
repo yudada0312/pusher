@@ -1,5 +1,5 @@
 # 專案說明
-此專案使用laravel-websockets（https://docs.beyondco.de/laravel-websockets/1.0/getting-started/installation.html）作為pusher服務，
+此專案使用laravel-websockets（ https://docs.beyondco.de/laravel-websockets/1.0/getting-started/installation.html ）作為pusher服務，
 並把它打包成docker image （yudada/pusher）
 ## 開啟環境步驟
 
@@ -49,10 +49,9 @@
 6. 下指令 `docker-compose up -d` 運行服務
 
 ##Debug Dashboard
+
 WebSocket儀表板預設位置是 `/ laravel-websockets`。如使用SSL連線,請改https協議進去儀表板
 
-## 備註
-
-####dockerfile內容
+## dockerfile內容
 
 yudada/pusher : https://github.com/yudada0312/dockerfile_pusher/blob/master/dockerfile
