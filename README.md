@@ -48,7 +48,7 @@
    
 6. 下指令 `docker-compose up -d` 運行服務
 
-##Debug Dashboard
+## Debug Dashboard
 
 WebSocket儀表板預設位置是 `/ laravel-websockets`。如使用SSL連線,請改https協議進去儀表板
 
